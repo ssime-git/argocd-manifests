@@ -1,0 +1,60 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: ml-pipeline-
+spec:
+  entrypoint: ml-pipeline
+  volumes:
+  - name: workdir
+    emptyDir: {}
+  templates:
+  - name: ml-pipeline
+    steps:
+    - - name: ingest-data
+        template: pipeline-step
+        arguments:
+          parameters:
+          - name: script
+            value: scripts/ingest_data.py
+    - - name: preprocess-data
+        template: pipeline-step
+        arguments:
+          parameters:
+          - name: script
+            value: scripts/preprocess_data.py
+    - - name: train-model
+        template: pipeline-step
+        arguments:
+          parameters:
+          - name: script
+            value: scripts/train_model.py
+    - - name: evaluate-model
+        template: pipeline-step
+        arguments:
+          parameters:
+          - name: script
+            value: scripts/evaluate_model.py
+    - - name: deploy-model
+        template: pipeline-step
+        arguments:
+          parameters:
+          - name: script
+            value: scripts/deploy_model.py
+
+  - name: pipeline-step
+    inputs:
+      parameters:
+      - name: script
+    container:
+      image: yourusername/ml-pipeline:latest
+      command: [python]
+      args: ["{{inputs.parameters.script}}"]
+      volumeMounts:
+      - name: workdir
+        mountPath: /app/data
+      - name: workdir
+        mountPath: /app/model
+      - name: workdir
+        mountPath: /app/results
+      - name: workdir
+        mountPath: /app/deployment
