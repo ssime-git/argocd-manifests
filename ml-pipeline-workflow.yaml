@@ -37,7 +37,7 @@ spec:
 
   - name: ingest-data
     container:
-      image: yourdockerhubusername/ml-pipeline:latest
+      image: ssimedockerhub/ml-pipeline:latest
       command: [python, scripts/ingest_data.py]
     outputs:
       artifacts:
@@ -50,7 +50,7 @@ spec:
       - name: iris-data
         path: /app/data/iris_data.csv
     container:
-      image: yourdockerhubusername/ml-pipeline:latest
+      image: ssimedockerhub/ml-pipeline:latest
       command: [python, scripts/preprocess_data.py]
     outputs:
       artifacts:
@@ -63,7 +63,7 @@ spec:
       - name: preprocessed-data
         path: /app/data/preprocessed_data.npz
     container:
-      image: yourdockerhubusername/ml-pipeline:latest
+      image: ssimedockerhub/ml-pipeline:latest
       command: [python, scripts/train_model.py]
     outputs:
       artifacts:
@@ -76,7 +76,7 @@ spec:
       - name: trained-model
         path: /app/model/iris_model.joblib
     container:
-      image: yourdockerhubusername/ml-pipeline:latest
+      image: ssimedockerhub/ml-pipeline:latest
       command: [python, scripts/evaluate_model.py]
     outputs:
       artifacts:
