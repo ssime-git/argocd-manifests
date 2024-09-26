@@ -47,9 +47,13 @@ spec:
       parameters:
       - name: script
     container:
-      image: ssimedockerhub/ml-pipeline:latest  # Replace with your actual Docker image
+      image: ssimedockerhub/ml-pipeline:latest
       command: [python]
       args: ["{{inputs.parameters.script}}"]
       volumeMounts:
       - name: workdir
-        mountPath: /app/workdir
+        mountPath: /app/data
+      - name: workdir
+        mountPath: /app/model
+      - name: workdir
+        mountPath: /app/results

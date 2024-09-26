@@ -1,9 +1,15 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
+import os
 
 def preprocess_data():
+    # Print current directory and list files
+    print(f"Current directory: {os.getcwd()}")
+    print(f"Files in /app/data: {os.listdir('/app/data')}")
+    
     # Load the data
     df = pd.read_csv('/app/data/iris_data.csv')
+    print(f"Loaded data shape: {df.shape}")
     
     # Split features and target
     X = df.drop('target', axis=1)
@@ -17,6 +23,8 @@ def preprocess_data():
     X_test.to_csv('/app/data/X_test.csv', index=False)
     y_train.to_csv('/app/data/y_train.csv', index=False)
     y_test.to_csv('/app/data/y_test.csv', index=False)
+    
+    print("Preprocessing completed. Files saved in /app/data/")
 
 if __name__ == "__main__":
     preprocess_data()
