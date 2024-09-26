@@ -4,9 +4,9 @@ metadata:
   name: ml-pipeline-workflow
   namespace: argocd
 spec:
-  entrypoint: ml-pipeline-2
+  entrypoint: ml-pipeline
   templates:
-  - name: ml-pipeline-2
+  - name: ml-pipeline
     steps:
     - - name: ingest-data
         template: ingest-data

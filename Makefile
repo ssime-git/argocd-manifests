@@ -8,7 +8,7 @@ update:
 	docker push ssimedockerhub/ml-pipeline:latest
 
 sync:
-	argocd app sync ml-pipeline
+	argocd app sync ml-pipeline-2
 
 monitor:
 	kubectl logs -n argocd -l workflows.argoproj.io/workflow=ml-pipeline-workflow --follow
