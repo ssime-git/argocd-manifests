@@ -2,6 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
   generateName: ml-pipeline-
+  namespace: argocd
 spec:
   entrypoint: ml-pipeline
   volumes:
@@ -46,15 +47,9 @@ spec:
       parameters:
       - name: script
     container:
-      image: yourusername/ml-pipeline:latest
+      image: ssimedockerhub/ml-pipeline:latest  # Placeholder image until your Docker image is ready
       command: [python]
       args: ["{{inputs.parameters.script}}"]
       volumeMounts:
       - name: workdir
-        mountPath: /app/data
-      - name: workdir
-        mountPath: /app/model
-      - name: workdir
-        mountPath: /app/results
-      - name: workdir
-        mountPath: /app/deployment
+        mountPath: /app/workdir

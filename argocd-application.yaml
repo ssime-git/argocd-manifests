@@ -6,12 +6,12 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/ssime-git/ml-pipeline-manifests.git
+    repoURL: https://github.com/ssime-git/argocd-manifests.git
     targetRevision: HEAD
     path: .
   destination:
     server: https://kubernetes.default.svc
-    namespace: ml-pipeline
+    namespace: argocd
   syncPolicy:
     automated:
       prune: true
