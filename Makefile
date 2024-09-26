@@ -5,3 +5,9 @@ getpass:
 update:
 	docker build -t ssimedockerhub/ml-pipeline:latest .
 	docker push ssimedockerhub/ml-pipeline:latest
+
+sync:
+	argocd app sync ml-pipeline
+
+monitor:
+	kubectl logs -n argocd -l workflows.argoproj.io/workflow=ml-pipeline-workflow --follow

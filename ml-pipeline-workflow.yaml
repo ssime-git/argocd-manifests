@@ -1,3 +1,15 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ml-pipeline-data
+  namespace: argocd
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
 apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
@@ -7,7 +19,8 @@ spec:
   entrypoint: ml-pipeline
   volumes:
   - name: workdir
-    emptyDir: {}
+    persistentVolumeClaim:
+      claimName: ml-pipeline-data
   templates:
   - name: ml-pipeline
     steps:
@@ -17,6 +30,8 @@ spec:
           parameters:
           - name: script
             value: scripts/ingest_data.py
+    - - name: debug-after-ingest
+        template: debug-step
     - - name: preprocess-data
         template: pipeline-step
         arguments:
@@ -53,7 +68,12 @@ spec:
       volumeMounts:
       - name: workdir
         mountPath: /app/data
+
+  - name: debug-step
+    container:
+      image: busybox
+      command: [sh, -c]
+      args: ["echo 'Debug: Listing /app/data'; ls -l /app/data; echo 'Debug: Displaying file contents'; cat /app/data/iris_data.csv || echo 'File not found'"]
+      volumeMounts:
       - name: workdir
-        mountPath: /app/model
-      - name: workdir
-        mountPath: /app/results
+        mountPath: /app/data
