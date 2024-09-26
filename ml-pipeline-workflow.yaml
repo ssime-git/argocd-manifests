@@ -1,15 +1,3 @@
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: ml-pipeline-data
-  namespace: argocd
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
----
 apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
@@ -17,52 +5,93 @@ metadata:
   namespace: argocd
 spec:
   entrypoint: ml-pipeline
-  volumes:
-  - name: workdir
-    persistentVolumeClaim:
-      claimName: ml-pipeline-data
   templates:
   - name: ml-pipeline
     steps:
     - - name: ingest-data
-        template: pipeline-step
-        arguments:
-          parameters:
-          - name: script
-            value: scripts/ingest_data.py
+        template: ingest-data
     - - name: preprocess-data
-        template: pipeline-step
+        template: preprocess-data
         arguments:
-          parameters:
-          - name: script
-            value: scripts/preprocess_data.py
+          artifacts:
+          - name: iris-data
+            from: "{{steps.ingest-data.outputs.artifacts.iris-data}}"
     - - name: train-model
-        template: pipeline-step
+        template: train-model
         arguments:
-          parameters:
-          - name: script
-            value: scripts/train_model.py
+          artifacts:
+          - name: preprocessed-data
+            from: "{{steps.preprocess-data.outputs.artifacts.preprocessed-data}}"
     - - name: evaluate-model
-        template: pipeline-step
+        template: evaluate-model
         arguments:
-          parameters:
-          - name: script
-            value: scripts/evaluate_model.py
+          artifacts:
+          - name: trained-model
+            from: "{{steps.train-model.outputs.artifacts.trained-model}}"
     - - name: deploy-model
-        template: pipeline-step
+        template: deploy-model
         arguments:
-          parameters:
-          - name: script
-            value: scripts/deploy_model.py
+          artifacts:
+          - name: evaluated-model
+            from: "{{steps.evaluate-model.outputs.artifacts.evaluated-model}}"
 
-  - name: pipeline-step
+  - name: ingest-data
+    container:
+      image: yourdockerhubusername/ml-pipeline:latest
+      command: [python, scripts/ingest_data.py]
+    outputs:
+      artifacts:
+      - name: iris-data
+        path: /app/data/iris_data.csv
+
+  - name: preprocess-data
     inputs:
-      parameters:
-      - name: script
+      artifacts:
+      - name: iris-data
+        path: /app/data/iris_data.csv
+    container:
+      image: yourdockerhubusername/ml-pipeline:latest
+      command: [python, scripts/preprocess_data.py]
+    outputs:
+      artifacts:
+      - name: preprocessed-data
+        path: /app/data/preprocessed_data.npz
+
+  - name: train-model
+    inputs:
+      artifacts:
+      - name: preprocessed-data
+        path: /app/data/preprocessed_data.npz
+    container:
+      image: yourdockerhubusername/ml-pipeline:latest
+      command: [python, scripts/train_model.py]
+    outputs:
+      artifacts:
+      - name: trained-model
+        path: /app/model/iris_model.joblib
+
+  - name: evaluate-model
+    inputs:
+      artifacts:
+      - name: trained-model
+        path: /app/model/iris_model.joblib
+    container:
+      image: yourdockerhubusername/ml-pipeline:latest
+      command: [python, scripts/evaluate_model.py]
+    outputs:
+      artifacts:
+      - name: evaluated-model
+        path: /app/results/evaluation.txt
+
+  - name: deploy-model
+    inputs:
+      artifacts:
+      - name: evaluated-model
+        path: /app/results/evaluation.txt
     container:
       image: ssimedockerhub/ml-pipeline:latest
-      command: [python]
-      args: ["{{inputs.parameters.script}}"]
-      volumeMounts:
-      - name: workdir
-        mountPath: /app/data
+      command: [python, scripts/deploy_model.py]
+    outputs:
+      artifacts:
+      - name: deployed-model
+        path: /app/deployment/iris_model_prod.joblib
