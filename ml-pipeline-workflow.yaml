@@ -30,8 +30,6 @@ spec:
           parameters:
           - name: script
             value: scripts/ingest_data.py
-    - - name: debug-after-ingest
-        template: debug-step
     - - name: preprocess-data
         template: pipeline-step
         arguments:
@@ -65,15 +63,6 @@ spec:
       image: ssimedockerhub/ml-pipeline:latest
       command: [python]
       args: ["{{inputs.parameters.script}}"]
-      volumeMounts:
-      - name: workdir
-        mountPath: /app/data
-
-  - name: debug-step
-    container:
-      image: busybox
-      command: [sh, -c]
-      args: ["echo 'Debug: Listing /app/data'; ls -l /app/data; echo 'Debug: Displaying file contents'; cat /app/data/iris_data.csv || echo 'File not found'"]
       volumeMounts:
       - name: workdir
         mountPath: /app/data
